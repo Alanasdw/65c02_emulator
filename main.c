@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#define MEM_SIZE 65535
+#include <string.h>
+
+#define MEM_SIZE ( 256 * 1024)
 
 struct s_mem
 {
@@ -39,22 +41,27 @@ struct s_65c02
 typedef struct s_65c02 S65c02;
 typedef struct s_mem SMem;
 
-void init_mem( SMem mem)
+void init_mem( SMem *mem)
 {
-    mem.data = malloc( MEM_SIZE * sizeof(char));
+    mem -> data = malloc( MEM_SIZE * sizeof(char));
+    memset( mem -> data, 0xea, MEM_SIZE * sizeof(char));
+    ((uint8_t *)mem -> data)[0x7FFC] = 0x00;
+    ((uint8_t *)mem -> data)[0x7FFD] = 0x80;
     return;
 }
 
-void destroy_mem( SMem mem)
+void destroy_mem( SMem *mem)
 {
-    free( mem.data);
-    mem.data = NULL;
+    free( mem -> data);
+    mem -> data = NULL;
     return;
 }
 
-void reset_cpu( S65c02 cpu, SMem mem)
+void reset_cpu( S65c02 *cpu, SMem mem)
 {
-
+    cpu -> PC = (((uint8_t *)mem.data)[0x7FFD] << 0x8) + 
+                ((uint8_t *)mem.data)[0x7FFC];
+    cpu -> status.P = 0xF7; // set to (**1101**) = (N,V,,B,D,I,Z,C)
     return;
 }
 
@@ -62,9 +69,13 @@ int main( void)
 {
     S65c02 CPU;
     SMem mem;
-    init_mem( mem);
+    init_mem( &mem);
 
-    destroy_mem( mem);
+    reset_cpu( &CPU, mem);
+
+    printf("%x\n", CPU.PC);
+
+    destroy_mem( &mem);
 
     return 0;
 }

@@ -2,7 +2,7 @@
 CC= gcc
 CFLAGS= -Wall
 
-SOURCE= main.c $(wildcard components/*.c)
+SOURCE= main.c
 OBJ= $(SOURCE:.c=.o)
 TARGET= main
 

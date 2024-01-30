@@ -5,7 +5,7 @@
 
 #include <string.h>
 
-#define MEM_SIZE ( 256 * 1024)
+#define MEM_SIZE ( 0x10000)
 #define REG_COUNT ( 6)
 #define MEM_SHOW_RANGE ( 10)
 
@@ -79,18 +79,46 @@ void cmd_update( S65c02 cpu, SMem mem)
 
     // register
     printf("-------------------register---------------\n");
-    printf("%-3s: 0x%.4hx\n", "A", cpu.A);
-    printf("%-3s: 0x%.4hx\n", "Y", cpu.Y);
-    printf("%-3s: 0x%.4hx\n", "X", cpu.X);
-    printf("%-3s: 0x%.8x\n", "PC", cpu.PC);
-    printf("%-3s: 0x%.4hx\n", "S", cpu.S);
-    printf("%-3s: 0x%.4hx\n", "P", cpu.status.P); // add status meaning
+    printf("%-3s: 0x%.2hhx\n", "A", cpu.A);
+    printf("%-3s: 0x%.2hhx\n", "Y", cpu.Y);
+    printf("%-3s: 0x%.2hhx\n", "X", cpu.X);
+    printf("%-3s: 0x%.4hx\n", "PC", cpu.PC);
+    printf("%-3s: 0x%.2hhx\n", "S", cpu.S);
+    printf("%-3s: 0x%.2hhx", "P", cpu.status.P);
+    // add status meaning
+    printf(" (");
+    uint8_t reader = (uint8_t)0x01;
+    char names[ 8][ 30] = { "Carry", "Zero", "IRQB disable", "Decimal mode", "BRK command", "unused", "Overflow", " Negative"};
+    for ( int i = 0; i < 8; i += 1)
+    {
+        if ( i != 0)
+        {
+            printf(",");
+        }// if
+        
+        if ( cpu.status.P & reader)
+        {
+            // set is read
+            printf("\033[31m");
+        }// if
+        else
+        {
+            // unset is green
+            printf("\033[32m");
+        }// else
+        printf(" %s", names[ i]);
+        printf("\033[0m");
+        reader = reader << 1;
+    }// for i
+
+    // reset the colors
+    printf("\033[0m)\n");
 
     // code around PC
     printf("-------------------code---------------\n");
     for ( int i = -1 * MEM_SHOW_RANGE; i < MEM_SHOW_RANGE; i += 1)
     {
-        printf("%.8x: ", cpu.PC + i * 3);
+        printf("%.4hx: ", cpu.PC + i * 3);
         for ( int j = 0; j < 3; j += 1)
         {
             printf("%.2hhx ", ((char *)mem.data)[ cpu.PC + i * 3 + j]);

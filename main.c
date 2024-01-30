@@ -6,6 +6,7 @@
 #include <string.h>
 
 #define MEM_SIZE ( 256 * 1024)
+#define REG_COUNT ( 6)
 
 struct s_mem
 {
@@ -65,6 +66,27 @@ void reset_cpu( S65c02 *cpu, SMem mem)
     return;
 }
 
+void cmd_update( S65c02 cpu, SMem mem)
+{
+    // clear terminal
+    printf("\e[1;1H\e[2J");
+
+    // register
+    printf("-------------------register---------------\n");
+    printf("%-3s: 0x%.4x\n", "A", cpu.A);
+    printf("%-3s: 0x%.4x\n", "Y", cpu.Y);
+    printf("%-3s: 0x%.4x\n", "X", cpu.X);
+    printf("%-3s: 0x%.8x\n", "PC", cpu.PC);
+    printf("%-3s: 0x%.4x\n", "S", cpu.S);
+    printf("%-3s: 0x%.4x\n", "P", cpu.status.P); // add status meaning
+
+    // code around PC
+
+
+
+    return;
+}
+
 int main( void)
 {
     S65c02 CPU;
@@ -73,6 +95,7 @@ int main( void)
 
     reset_cpu( &CPU, mem);
 
+    cmd_update( CPU, mem);
     printf("%x\n", CPU.PC);
 
     destroy_mem( &mem);

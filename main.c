@@ -46,13 +46,13 @@ typedef struct s_mem SMem;
 void init_mem( SMem *mem)
 {
     mem -> data = malloc( MEM_SIZE * sizeof(char));
-    memset( mem -> data, 0xea, MEM_SIZE * sizeof(char));
-    // program start location
-    ((uint8_t *)mem -> data)[0x7FFC] = 0x00;
-    ((uint8_t *)mem -> data)[0x7FFD] = 0x80;
 
-    // the assembly byte code
-    ((uint8_t *)mem -> data)[0x8000] = 0xea;
+    // load program from romfile
+    FILE *rom = fopen( "romfile", "rb");
+    fread( mem -> data, sizeof(char), MEM_SIZE, rom);
+
+    fclose( rom);
+    rom = NULL;
 
     return;
 }

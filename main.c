@@ -7,6 +7,7 @@
 
 #define MEM_SIZE ( 256 * 1024)
 #define REG_COUNT ( 6)
+#define MEM_SHOW_RANGE ( 10)
 
 struct s_mem
 {
@@ -46,8 +47,13 @@ void init_mem( SMem *mem)
 {
     mem -> data = malloc( MEM_SIZE * sizeof(char));
     memset( mem -> data, 0xea, MEM_SIZE * sizeof(char));
+    // program start location
     ((uint8_t *)mem -> data)[0x7FFC] = 0x00;
     ((uint8_t *)mem -> data)[0x7FFD] = 0x80;
+
+    // the assembly byte code
+    ((uint8_t *)mem -> data)[0x8000] = 0xea;
+
     return;
 }
 
@@ -73,15 +79,24 @@ void cmd_update( S65c02 cpu, SMem mem)
 
     // register
     printf("-------------------register---------------\n");
-    printf("%-3s: 0x%.4x\n", "A", cpu.A);
-    printf("%-3s: 0x%.4x\n", "Y", cpu.Y);
-    printf("%-3s: 0x%.4x\n", "X", cpu.X);
+    printf("%-3s: 0x%.4hx\n", "A", cpu.A);
+    printf("%-3s: 0x%.4hx\n", "Y", cpu.Y);
+    printf("%-3s: 0x%.4hx\n", "X", cpu.X);
     printf("%-3s: 0x%.8x\n", "PC", cpu.PC);
-    printf("%-3s: 0x%.4x\n", "S", cpu.S);
-    printf("%-3s: 0x%.4x\n", "P", cpu.status.P); // add status meaning
+    printf("%-3s: 0x%.4hx\n", "S", cpu.S);
+    printf("%-3s: 0x%.4hx\n", "P", cpu.status.P); // add status meaning
 
     // code around PC
-
+    printf("-------------------code---------------\n");
+    for ( int i = -1 * MEM_SHOW_RANGE; i < MEM_SHOW_RANGE; i += 1)
+    {
+        printf("%.8x: ", cpu.PC + i * 3);
+        for ( int j = 0; j < 3; j += 1)
+        {
+            printf("%.2hhx ", ((char *)mem.data)[ cpu.PC + i * 3 + j]);
+        }// for j
+        printf("\n");
+    }// for i
 
 
     return;
@@ -96,7 +111,6 @@ int main( void)
     reset_cpu( &CPU, mem);
 
     cmd_update( CPU, mem);
-    printf("%x\n", CPU.PC);
 
     destroy_mem( &mem);
 
